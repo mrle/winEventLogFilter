@@ -58,7 +58,7 @@ namespace WinEventLog_Browser
             this.btnFilter = new System.Windows.Forms.Button();
             this.txtResults = new System.Windows.Forms.TextBox();
             this.tipToolTip = new System.Windows.Forms.ToolTip(this.components);
-            //this.cmbLocalNetworkAdrs = new System.Windows.Forms.ComboBox();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.pnlSearchConditions.SuspendLayout();
             this.grpSearchConditions.SuspendLayout();
             this.pnlActions.SuspendLayout();
@@ -78,7 +78,7 @@ namespace WinEventLog_Browser
             // 
             // grpSearchConditions
             // 
-            //this.grpSearchConditions.Controls.Add(this.cmbLocalNetworkAdrs);
+            this.grpSearchConditions.Controls.Add(this.checkBox1);
             this.grpSearchConditions.Controls.Add(this.txtSearchTerm);
             this.grpSearchConditions.Controls.Add(this.lblEventSearchTerm);
             this.grpSearchConditions.Controls.Add(this.chkMachExact);
@@ -382,13 +382,15 @@ namespace WinEventLog_Browser
             this.tipToolTip.InitialDelay = 500;
             this.tipToolTip.ReshowDelay = 100;
             // 
-            // cmbLocalNetworkAdrs
+            // checkBox1
             // 
-            //this.cmbLocalNetworkAdrs.FormattingEnabled = true;
-            //this.cmblocalnetworkadrs.location = new system.drawing.point(377, 25);
-            //this.cmblocalnetworkadrs.name = "cmblocalnetworkadrs";
-            //this.cmblocalnetworkadrs.size = new system.drawing.size(391, 24);
-            //this.cmblocalnetworkadrs.tabindex = 24;
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Location = new System.Drawing.Point(352, 186);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(95, 20);
+            this.checkBox1.TabIndex = 24;
+            this.checkBox1.Text = "checkBox1";
+            this.checkBox1.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -467,6 +469,7 @@ namespace WinEventLog_Browser
         private System.Windows.Forms.TextBox txtSearchTerm;
         private System.Windows.Forms.Label lblEventSearchTerm;
         private System.Windows.Forms.ToolTip tipToolTip;
+        private System.Windows.Forms.CheckBox checkBox1;
         //private System.Windows.Forms.ComboBox cmbLocalNetworkAdrs;
     }
 }

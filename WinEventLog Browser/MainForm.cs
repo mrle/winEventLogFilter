@@ -22,6 +22,7 @@ namespace WinEventLog_Browser
         {
             // Initialisation
             InitializeComponent();
+            //LoadAppSearchHistory();
             searchConditions = new SearchConditions();
 
             //PopulateLocalNetworkIPs();
@@ -32,6 +33,7 @@ namespace WinEventLog_Browser
             dateStart.Value = DateTime.Now.AddDays(-1);
             GetEventTypes();
             GetEventLogs();
+            txtSearchTerm.Text = WinEventLog_Filter.Properties.Settings.Default.SearchForTerm;
         }
 
         #region Events
@@ -114,6 +116,8 @@ namespace WinEventLog_Browser
                 // Print missing links summary results, if missing links filtering is turned on
                 if (searchConditions.MissingLinksFiltering)
                     txtResults.Text += "\r\n " + GetMissingLinksSummary();
+
+                WinEventLog_Filter.Properties.Settings.Default.SearchForTerm = this.txtSearchTerm.Text;
                  
             }
             catch (Exception ex)
@@ -412,6 +416,43 @@ namespace WinEventLog_Browser
             searchConditions.MissingLinksFiltering = chkMissingLinksFiltering.Checked;
             searchConditions.MachineIP = getMachineIPAddress();
             searchConditions.MachineName = System.Environment.MachineName;
+        }
+
+        /// <summary>
+        /// Helper method that loads search history xml file that is stored localy on first app run and that
+        /// pupulates search condition fields with appropriate data.
+        /// </summary>
+        private void LoadAppSearchHistory()
+        {
+            try
+            {
+                if (!Directory.Exists(WinEventLog_Filter.Properties.Settings.Default.AppSearchHistory))
+                {
+                    Directory.CreateDirectory(WinEventLog_Filter.Properties.Settings.Default.AppSearchHistory);
+                }
+                //if (File.Exists(filepath))
+                //{
+                //    FileStream fs = new FileStream(filepath, FileMode.Open);
+                //    cm = (ConfigManager)ser.Deserialize(fs);
+                //    fs.Close();
+                //}
+                //else
+                //{
+                //    MessageBox.Show("Could not find User Configuration File\n\nCreating new file...", "User Config Not Found");
+                //    FileStream fs = new FileStream(filepath, FileMode.CreateNew);
+                //    TextWriter tw = new StreamWriter(fs);
+                //    ser.Serialize(tw, cm);
+                //    tw.Close();
+                //    fs.Close();
+                //}
+                //setupControlsFromConfig();
+            }
+            catch (Exception ex)
+            {
+                txtResults.ForeColor = Color.Red;
+                txtResults.Text = ex.Message;
+                txtResults.Text += "\r\n" + ex.StackTrace;
+            }
         }
 
 

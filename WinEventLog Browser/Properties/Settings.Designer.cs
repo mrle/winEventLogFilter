@@ -22,5 +22,29 @@ namespace WinEventLog_Filter.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\Marko\\AppData\\Local\\WinEventLogFilter\\")]
+        public string AppSearchHistory {
+            get {
+                return ((string)(this["AppSearchHistory"]));
+            }
+            set {
+                this["AppSearchHistory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SearchForTerm {
+            get {
+                return ((string)(this["SearchForTerm"]));
+            }
+            set {
+                this["SearchForTerm"] = value;
+            }
+        }
     }
 }

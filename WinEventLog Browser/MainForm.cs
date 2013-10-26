@@ -24,7 +24,7 @@ namespace WinEventLog_Browser
             InitializeComponent();
             searchConditions = new SearchConditions();
 
-            PopulateLocalNetworkIPs();
+            //PopulateLocalNetworkIPs();
 
             // Set defaults
             //progFilterResults.Hide();
@@ -45,8 +45,6 @@ namespace WinEventLog_Browser
         /// 6.) Pussh the unique filtered entries in the resulting list
         /// 7.) Print the results
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void btnFilter_Click(object sender, EventArgs e)
         {
             try
@@ -71,17 +69,13 @@ namespace WinEventLog_Browser
                 txtResults.ForeColor = Color.Green;
                 txtResults.Text = searchConditions.PrintSearchConditions();
 
-                /*
-                if (bgwFilterEvents.IsBusy != true)
-                    bgwFilterEvents.RunWorkerAsync(searchConditions);
-                */
-
                 
                 missingLinksTcms = new List<string>();
                 events = new Dictionary<int, EventLogEntry>();
                 bool connected = false;
                 // Load selected Windows log
-                using (EventLog log = new EventLog(searchConditions.EventLog, cmbLocalNetworkAdrs.Text))
+                //using (EventLog log = new EventLog(searchConditions.EventLog, cmbLocalNetworkAdrs.Text))
+                using (EventLog log = new EventLog(searchConditions.EventLog, searchConditions.MachineName))
                 {
                     connected = true;
                     // Loop throught selected log event entries, begin from the entry which is last created
@@ -423,106 +417,45 @@ namespace WinEventLog_Browser
 
 
 
-        private void GetLocalNetworkComputersNames()
-        {
+        //private void GetLocalNetworkComputersNames()
+        //{
             
-        }
-        private void PopulateLocalNetworkIPs()
-        {
-            var nics = NetworkInterface.GetAllNetworkInterfaces();
-            foreach (var nic in nics)
-            {
-                var ipProps = nic.GetIPProperties();
+        //}
 
-                // We're only interested in IPv4 addresses for this example.
-                var ipv4Addrs = ipProps.UnicastAddresses.Where(addr => addr.Address.AddressFamily == AddressFamily.InterNetwork);
+        //private void PopulateLocalNetworkIPs()
+        //{
+        //    var nics = NetworkInterface.GetAllNetworkInterfaces();
+        //    foreach (var nic in nics)
+        //    {
+        //        var ipProps = nic.GetIPProperties();
 
-                foreach (var addr in ipv4Addrs)
-                {
-                    var network = CalculateNetwork(addr);
-                    if (network != null)
-                        cmbLocalNetworkAdrs.Items.Add("Addr: " + addr.Address + " Mask: " + addr.IPv4Mask + "  Network: " + network);
-                }
-            }
-        }
-        private IPAddress CalculateNetwork(UnicastIPAddressInformation addr)
-        {
-            // The mask will be null in some scenarios, like a dhcp address 169.254.x.x
-            if (addr.IPv4Mask == null)
-                return null;
+        //        // We're only interested in IPv4 addresses for this example.
+        //        var ipv4Addrs = ipProps.UnicastAddresses.Where(addr => addr.Address.AddressFamily == AddressFamily.InterNetwork);
 
-            var ip = addr.Address.GetAddressBytes();
-            var mask = addr.IPv4Mask.GetAddressBytes();
-            var result = new Byte[4];
-            for (int i = 0; i < 4; ++i)
-            {
-                result[i] = (Byte)(ip[i] & mask[i]);
-            }
+        //        foreach (var addr in ipv4Addrs)
+        //        {
+        //            var network = CalculateNetwork(addr);
+        //            if (network != null)
+        //                cmbLocalNetworkAdrs.Items.Add("Addr: " + addr.Address + " Mask: " + addr.IPv4Mask + "  Network: " + network);
+        //        }
+        //    }
+        //}
+        //private IPAddress CalculateNetwork(UnicastIPAddressInformation addr)
+        //{
+        //    // The mask will be null in some scenarios, like a dhcp address 169.254.x.x
+        //    if (addr.IPv4Mask == null)
+        //        return null;
 
-            return new IPAddress(result);
-        }
+        //    var ip = addr.Address.GetAddressBytes();
+        //    var mask = addr.IPv4Mask.GetAddressBytes();
+        //    var result = new Byte[4];
+        //    for (int i = 0; i < 4; ++i)
+        //    {
+        //        result[i] = (Byte)(ip[i] & mask[i]);
+        //    }
+
+        //    return new IPAddress(result);
+        //}
         #endregion
-
-        private void bgwFilterEvents_DoWork(object sender, DoWorkEventArgs e)
-        {
-            SearchConditions sc = e.Argument as SearchConditions;
-
-            if (sc == null) throw new Exception("Search conditions are not loaded.");
-
-            BackgroundWorker worker = sender as BackgroundWorker;
-
-            missingLinksTcms = new List<string>();
-            events = new Dictionary<int, EventLogEntry>();
-            bool connected = false;
-            // Load selected Windows log
-            using (EventLog log = new EventLog(sc.EventLog, sc.MachineName))
-            {
-                connected = true;
-                int progress = 1;
-                // Loop throught selected log event entries, begin from the entry which is last created
-                for (var i = log.Entries.Count - 1; i >= 0; i--)
-                    using (EventLogEntry ele = log.Entries[i])
-                    {
-                        worker.ReportProgress((progress == 4)?1:++progress);
-                        // Exit the loop if the current event entry creation date does not match the given date span
-                        if (ele.TimeGenerated < sc.StartDate || ele.TimeGenerated >= sc.EndDate)
-                            break;
-                        // If search term exist and if current event message does not contain it, skip the iteration
-                        if (!(sc.SearchTerms == null) && !MessageContainSearchedTerm(ele.Message))
-                            continue;
-                        // Enter if event ID condition is empty or if it is the same as of the current event entry
-                        if (sc.EventID.Equals("") || ele.EventID == int.Parse(sc.EventID))
-                            // Enter if event source condition is not defined or if it is the same as of the current event entry (exact phrase condition is also considered)
-                            if (sc.EventSource.Equals("")
-                                || (sc.MatchExactEventSource ?
-                                    ele.Source.ToString().ToLower().Equals(sc.EventSource.ToLower()) :
-                                    ele.Source.ToString().ToLower().Contains(sc.EventSource.ToLower())))
-                                // Enters if event type condition is All or if it is the same as of the current event entry
-                                if (sc.EventType.Equals("All") || sc.EventType.Equals(ele.EntryType.ToString()))
-                                    PushEventMessage(ele);
-                    }
-            }
-            if (!connected) throw new Exception("Unable to access '" + searchConditions.EventLog + "' event log!");
-            worker.ReportProgress(100);
-        }
-
-        private void bgwFilterEvents_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            progFilterResults.Value = e.ProgressPercentage;
-        }
-
-        private void bgwFilterEvents_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            // Print the results
-            for (var i = 0; i < events.Count; i++)
-            {
-                txtResults.Text += "\r\n [EVENT No " + (i + 1) + "]";
-                txtResults.Text += "\r\n " + events.ElementAt(i).Value.Message;
-                txtResults.Text += "\r\n ---------------------------------------------------------------------------------------------------------------------------------";
-            }
-            // Print missing links summary results, if missing links filtering is turned on
-            if (searchConditions.MissingLinksFiltering)
-                txtResults.Text += "\r\n " + GetMissingLinksSummary();
-        }
     }
 }

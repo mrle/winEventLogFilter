@@ -35,7 +35,6 @@ namespace WinEventLog_Browser
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.pnlSearchConditions = new System.Windows.Forms.Panel();
             this.grpSearchConditions = new System.Windows.Forms.GroupBox();
-            this.cmbLocalNetworkAdrs = new System.Windows.Forms.ComboBox();
             this.txtSearchTerm = new System.Windows.Forms.TextBox();
             this.lblEventSearchTerm = new System.Windows.Forms.Label();
             this.chkMachExact = new System.Windows.Forms.CheckBox();
@@ -53,14 +52,13 @@ namespace WinEventLog_Browser
             this.lblStartDate = new System.Windows.Forms.Label();
             this.lblEventId = new System.Windows.Forms.Label();
             this.pnlActions = new System.Windows.Forms.Panel();
-            this.progFilterResults = new System.Windows.Forms.ProgressBar();
             this.btnCopySummary = new System.Windows.Forms.Button();
             this.btnCopy = new System.Windows.Forms.Button();
             this.btnSaveToFile = new System.Windows.Forms.Button();
             this.btnFilter = new System.Windows.Forms.Button();
             this.txtResults = new System.Windows.Forms.TextBox();
             this.tipToolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.bgwFilterEvents = new System.ComponentModel.BackgroundWorker();
+            //this.cmbLocalNetworkAdrs = new System.Windows.Forms.ComboBox();
             this.pnlSearchConditions.SuspendLayout();
             this.grpSearchConditions.SuspendLayout();
             this.pnlActions.SuspendLayout();
@@ -80,7 +78,7 @@ namespace WinEventLog_Browser
             // 
             // grpSearchConditions
             // 
-            this.grpSearchConditions.Controls.Add(this.cmbLocalNetworkAdrs);
+            //this.grpSearchConditions.Controls.Add(this.cmbLocalNetworkAdrs);
             this.grpSearchConditions.Controls.Add(this.txtSearchTerm);
             this.grpSearchConditions.Controls.Add(this.lblEventSearchTerm);
             this.grpSearchConditions.Controls.Add(this.chkMachExact);
@@ -105,14 +103,6 @@ namespace WinEventLog_Browser
             this.grpSearchConditions.TabIndex = 10;
             this.grpSearchConditions.TabStop = false;
             this.grpSearchConditions.Text = "Search Conditions:";
-            // 
-            // cmbLocalNetworkAdrs
-            // 
-            this.cmbLocalNetworkAdrs.FormattingEnabled = true;
-            this.cmbLocalNetworkAdrs.Location = new System.Drawing.Point(377, 25);
-            this.cmbLocalNetworkAdrs.Name = "cmbLocalNetworkAdrs";
-            this.cmbLocalNetworkAdrs.Size = new System.Drawing.Size(391, 24);
-            this.cmbLocalNetworkAdrs.TabIndex = 24;
             // 
             // txtSearchTerm
             // 
@@ -306,7 +296,6 @@ namespace WinEventLog_Browser
             // pnlActions
             // 
             this.pnlActions.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.pnlActions.Controls.Add(this.progFilterResults);
             this.pnlActions.Controls.Add(this.btnCopySummary);
             this.pnlActions.Controls.Add(this.btnCopy);
             this.pnlActions.Controls.Add(this.btnSaveToFile);
@@ -316,14 +305,6 @@ namespace WinEventLog_Browser
             this.pnlActions.Name = "pnlActions";
             this.pnlActions.Size = new System.Drawing.Size(784, 50);
             this.pnlActions.TabIndex = 1;
-            // 
-            // progFilterResults
-            // 
-            this.progFilterResults.Location = new System.Drawing.Point(134, 13);
-            this.progFilterResults.Maximum = 5;
-            this.progFilterResults.Name = "progFilterResults";
-            this.progFilterResults.Size = new System.Drawing.Size(214, 23);
-            this.progFilterResults.TabIndex = 13;
             // 
             // btnCopySummary
             // 
@@ -401,12 +382,13 @@ namespace WinEventLog_Browser
             this.tipToolTip.InitialDelay = 500;
             this.tipToolTip.ReshowDelay = 100;
             // 
-            // bgwFilterEvents
+            // cmbLocalNetworkAdrs
             // 
-            this.bgwFilterEvents.WorkerReportsProgress = true;
-            this.bgwFilterEvents.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwFilterEvents_DoWork);
-            this.bgwFilterEvents.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgwFilterEvents_ProgressChanged);
-            this.bgwFilterEvents.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgwFilterEvents_RunWorkerCompleted);
+            //this.cmbLocalNetworkAdrs.FormattingEnabled = true;
+            //this.cmblocalnetworkadrs.location = new system.drawing.point(377, 25);
+            //this.cmblocalnetworkadrs.name = "cmblocalnetworkadrs";
+            //this.cmblocalnetworkadrs.size = new system.drawing.size(391, 24);
+            //this.cmblocalnetworkadrs.tabindex = 24;
             // 
             // MainForm
             // 
@@ -485,9 +467,7 @@ namespace WinEventLog_Browser
         private System.Windows.Forms.TextBox txtSearchTerm;
         private System.Windows.Forms.Label lblEventSearchTerm;
         private System.Windows.Forms.ToolTip tipToolTip;
-        private System.Windows.Forms.ComboBox cmbLocalNetworkAdrs;
-        private System.ComponentModel.BackgroundWorker bgwFilterEvents;
-        private System.Windows.Forms.ProgressBar progFilterResults;
+        //private System.Windows.Forms.ComboBox cmbLocalNetworkAdrs;
     }
 }
 

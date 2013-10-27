@@ -1,8 +1,0 @@
-D:\Dropbox\DEV\VS2010 Projects\WinEventLog Browser\WinEventLog Browser\obj\x86\Debug\WinEventLog Browser.csprojResolveAssemblyReference.cache
-D:\Dropbox\DEV\VS2010 Projects\WinEventLog Browser\WinEventLog Browser\obj\x86\Debug\WinEventLog_Browser.MainForm.resources
-D:\Dropbox\DEV\VS2010 Projects\WinEventLog Browser\WinEventLog Browser\obj\x86\Debug\WinEventLog_Browser.Properties.Resources.resources
-D:\Dropbox\DEV\VS2010 Projects\WinEventLog Browser\WinEventLog Browser\obj\x86\Debug\WinEventLog Browser.csproj.GenerateResource.Cache
-D:\Dropbox\DEV\VS2010 Projects\WinEventLog Browser\WinEventLog Browser\bin\Debug\WinEventLog Browser.exe
-D:\Dropbox\DEV\VS2010 Projects\WinEventLog Browser\WinEventLog Browser\bin\Debug\WinEventLog Browser.pdb
-D:\Dropbox\DEV\VS2010 Projects\WinEventLog Browser\WinEventLog Browser\obj\x86\Debug\WinEventLog Browser.exe
-D:\Dropbox\DEV\VS2010 Projects\WinEventLog Browser\WinEventLog Browser\obj\x86\Debug\WinEventLog Browser.pdb

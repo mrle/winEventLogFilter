@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 2012 for Web
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinEventLog Filter", "WinEventLog Browser\WinEventLog Filter.csproj", "{6B5FDC2E-9A90-4199-85BE-81D7274C6DAA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinEventLog Filter", "WinEventLog Filter\WinEventLog Filter.csproj", "{6B5FDC2E-9A90-4199-85BE-81D7274C6DAA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinEventLog TestApp", "WinEventLog TestApp\WinEventLog TestApp.csproj", "{EB2E2D0A-89C3-4E31-B33B-4638F98DF5A5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinEventLog Creator", "WinEventLog Creator\WinEventLog Creator.csproj", "{EB2E2D0A-89C3-4E31-B33B-4638F98DF5A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

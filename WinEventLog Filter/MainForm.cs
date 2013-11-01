@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -25,7 +26,8 @@ namespace WinEventLog_Browser
             searchConditions = new SearchConditions();
 
             // Set defaults
-            //this.txtEventId.Text = "11111";
+            this.dateEnd.CustomFormat = FormDateFormatBasedOnLocalSystemSettings();
+            this.dateStart.CustomFormat = FormDateFormatBasedOnLocalSystemSettings();
             this.dateStart.Value = DateTime.Now.AddDays(-1);
             GetEventTypes();
             GetEventLogs();
@@ -82,9 +84,12 @@ namespace WinEventLog_Browser
                     for (var i = log.Entries.Count - 1; i >= 0; i--)
                         using (EventLogEntry ele = log.Entries[i])
                         {
-                            // Exit the loop if the current event entry creation date does not match the given date span
-                            if (ele.TimeGenerated < searchConditions.StartDate || ele.TimeGenerated >= searchConditions.EndDate)
+                            // Exit the loop if the current event entry creation date is older then start date search parameter
+                            if (ele.TimeGenerated < searchConditions.StartDate)
                                 break;
+                            // Continue loop if the current event entirty creation date is newer thrn end date search parameter
+                            if (ele.TimeGenerated >= searchConditions.EndDate)
+                                continue;
                             // If search term exist and if current event message does not contain it, skip the iteration
                             if (!(searchConditions.SearchTerms == null) && !MessageContainSearchedTerm(ele.Message))
                                 continue;
@@ -116,8 +121,7 @@ namespace WinEventLog_Browser
                     txtResults.Text += "\r\n " + GetMissingLinksSummary();
 
                 // Save search conditions in app settings
-                //if (chkSaveSearchConditions.Checked)
-                    StoreSearchParameters();
+                StoreSearchParameters();
             }
             catch (Exception ex)
             {
@@ -307,6 +311,7 @@ namespace WinEventLog_Browser
                 retVal = "\r\n[MISSING LINKS SUMMARY]";
                 retVal += "\r\n Machine IP: " + searchConditions.MachineIP;
                 retVal += "\r\n Time span: " + dateStart.Value + " - " + dateEnd.Value;
+                retVal += "\r\n Items:";
             }
             for (var i = 0; i < missingLinksTcms.Count; i++)
                 retVal += "\r\n " + missingLinksTcms[i].ToString();
@@ -474,6 +479,16 @@ namespace WinEventLog_Browser
                 txtResults.Text = ex.Message;
                 txtResults.Text += "\r\n" + ex.StackTrace;
             }
+        }
+
+        /// <summary>
+        /// Helper method which creates a custom date format ment for date picker controls usin local sustem culture info
+        /// </summary>
+        private string FormDateFormatBasedOnLocalSystemSettings()
+        {
+            DateTimeFormatInfo sysFormat = CultureInfo.CurrentCulture.DateTimeFormat;
+            
+            return sysFormat.ShortDatePattern + " " + sysFormat.LongTimePattern;
         }
 
 

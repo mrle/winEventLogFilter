@@ -218,6 +218,7 @@ namespace WinEventLog_Browser
             // 
             // dateEnd
             // 
+            this.dateEnd.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
             this.dateEnd.Location = new System.Drawing.Point(469, 154);
             this.dateEnd.Name = "dateEnd";
             this.dateEnd.Size = new System.Drawing.Size(237, 23);
@@ -226,6 +227,7 @@ namespace WinEventLog_Browser
             // 
             // dateStart
             // 
+            this.dateStart.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
             this.dateStart.Location = new System.Drawing.Point(151, 154);
             this.dateStart.Name = "dateStart";
             this.dateStart.Size = new System.Drawing.Size(237, 23);

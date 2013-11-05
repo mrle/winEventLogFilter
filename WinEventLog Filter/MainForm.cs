@@ -1,21 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading;
 using System.Windows.Forms;
-using WinEventLog_Filter;
 
-namespace WinEventLog_Browser
+namespace WinEventLog_Filter
 {
     public partial class MainForm : Form
     {
@@ -26,12 +20,12 @@ namespace WinEventLog_Browser
             searchConditions = new SearchConditions();
 
             // Set defaults
-            this.dateEnd.CustomFormat = FormDateFormatBasedOnLocalSystemSettings();
-            this.dateStart.CustomFormat = FormDateFormatBasedOnLocalSystemSettings();
-            this.dateStart.Value = DateTime.Now.AddDays(-1);
+            dateEnd.CustomFormat = FormDateFormatBasedOnLocalSystemSettings();
+            dateStart.CustomFormat = FormDateFormatBasedOnLocalSystemSettings();
+            dateStart.Value = DateTime.Now.AddDays(-1);
             GetEventTypes();
             GetEventLogs();
-            if (WinEventLog_Filter.Properties.Settings.Default.SaveSearchConditions)
+            if (Properties.Settings.Default.SaveSearchConditions)
                 RestoreSearchParameters();
         }
 
@@ -51,23 +45,28 @@ namespace WinEventLog_Browser
         {
             try
             {
+                //do {
+                //    GetSearchConditions();
+                //    if (searchConditions.ValidateDateConditions() == SearchConditions.ValidationStatus.DatesEqual)
+
+                //} while(searchConditions.ValidateDateConditions() != SearchConditions.ValidationStatus.ValidationPassed);
                 // If start and edn dates are equal, substract one day from start date
                 if (dateStart.Value.ToShortDateString().Equals(dateEnd.Value.ToShortDateString()))
                     dateStart.Value = dateStart.Value.AddDays(-1);
                 // If date span is greater then 15 days promt the user
                 if ((dateEnd.Value - dateStart.Value).Days > 15)
-                    if (MessageBox.Show("You have selected the date span which is greater then 30 days! " +
+                {
+                    if (MessageBox.Show("You have selected the date span which is greater then 15 days! " +
                         "Consequently, greater number of the windows events has to be filtered, which may prolong the execution time." +
                         "\r\n\r\nIf you want to proceed select Ok (or press Enter). \r\nIf you want to abort the action select Cancel.",
                         "Question",
                         MessageBoxButtons.OKCancel,
                         MessageBoxIcon.Question) == System.Windows.Forms.DialogResult.Cancel)
                         return;
+                }
 
-                // Helper method which loads the search conditions into the searchConditions variable
+                // Load search conditions
                 GetSearchConditions();
-
-                // Helper mathod which prints the search conditions into result text box
                 txtResults.ForeColor = Color.Green;
                 txtResults.Text = searchConditions.PrintSearchConditions();
 
@@ -80,42 +79,59 @@ namespace WinEventLog_Browser
                 using (EventLog log = new EventLog(searchConditions.EventLog, searchConditions.MachineName))
                 {
                     connected = true;
+                    this.Enabled = false;
                     // Loop throught selected log event entries, begin from the entry which is last created
                     for (var i = log.Entries.Count - 1; i >= 0; i--)
+                    {
                         using (EventLogEntry ele = log.Entries[i])
                         {
-                            // Exit the loop if the current event entry creation date is older then start date search parameter
+                            // Break the loop if the current event entry creation date is older then start date search parameter
                             if (ele.TimeGenerated < searchConditions.StartDate)
                                 break;
-                            // Continue loop if the current event entirty creation date is newer thrn end date search parameter
+                            // Skip the iteration if the current event entirty creation date is newer thrn end date search parameter
                             if (ele.TimeGenerated >= searchConditions.EndDate)
                                 continue;
-                            // If search term exist and if current event message does not contain it, skip the iteration
-                            if (!(searchConditions.SearchTerms == null) && !MessageContainSearchedTerm(ele.Message))
+                            // Skip the iteration if search term exist and if current event message does not contain it
+                            if (searchConditions.SearchTerms != null && !MessageContainSearchedTerm(ele.Message))
                                 continue;
-                            // Enter if event ID condition is empty or if it is the same as of the current event entry
-                            if (searchConditions.EventID.Equals("") || ele.EventID == int.Parse(searchConditions.EventID))
-                                // Enter if event source condition is not defined or if it is the same as of the current event entry (exact phrase condition is also considered)
-                                if (searchConditions.EventSource.Equals("")
-                                    || (searchConditions.MatchExactEventSource ?
-                                        ele.Source.ToString().ToLower().Equals(searchConditions.EventSource.ToLower()) :
-                                        ele.Source.ToString().ToLower().Contains(searchConditions.EventSource.ToLower())))
-                                    // Enters if event type condition is All or if it is the same as of the current event entry
-                                    if (searchConditions.EventType.Equals("All") || searchConditions.EventType.Equals(ele.EntryType.ToString()))
-                                        PushEventMessage(ele);
-                        }
-                }
-                if (!connected) throw new Exception("Unable to access '" + searchConditions.EventLog + "' event log!");
-                
+                            // Skip the iteration if event ID condition is NOT empty or if it is NOT the same as of the current event entry
+                            if (!(searchConditions.EventID.Equals("") || ele.EventID == int.Parse(searchConditions.EventID)))
+                                continue;
+                            // Skip the iteration if event source condition is NOT empty or if it is NOT the same as of the current event entry (exact phrase condition is also considered)
+                            if (!(searchConditions.EventSource.Equals("")
+                                || (searchConditions.MatchExactEventSource ?
+                                    ele.Source.ToString().ToLower().Equals(searchConditions.EventSource.ToLower()) :
+                                    ele.Source.ToString().ToLower().Contains(searchConditions.EventSource.ToLower()))))
+                                continue;
+                            // Skip the iteration if event type condition is NOT All or if it is NOT the same as of the current event entry
+                            if (!(searchConditions.EventType.Equals("All") || searchConditions.EventType.Equals(ele.EntryType.ToString())))
+                                continue;
 
-                
+                            // When all validation have passes, push event entry into the resulting list
+                            PushEventMessage(ele);
+                        }
+                    }
+                    this.Enabled = true;
+                }
+
+                if (!connected) 
+                    throw new Exception("Unable to access '" + searchConditions.EventLog + "' event log!");
+
+
+
                 // Print the results
                 for (var i = 0; i < events.Count; i++)
                 {
                     txtResults.Text += "\r\n [EVENT No " + (i + 1) + "]";
-                    txtResults.Text += "\r\n " + events.ElementAt(i).Value.Message;
-                    txtResults.Text += "\r\n ---------------------------------------------------------------------------------------------------------------------------------";
+                    txtResults.Text += "\r\n " + events.ElementAt(i).Value.Message.Replace("  ", "\r\n").Replace("\n", "\r\n");
+                    txtResults.Text += "\r\n -------------------------------------------------------------------------------------------------------------------------------";
                 }
+                if (events != null && events.Count > 0)
+                    txtResults.Text += "\r\n\r\n ||||| >>> RESULT: " + events.Count + " unique events founded!!! <<< |||||";
+                else
+                    txtResults.Text += "\r\n\r\n There is no Windows events that match the search criteria :'(";
+
+
                 // Print missing links summary results, if missing links filtering is turned on
                 if (searchConditions.MissingLinksFiltering)
                     txtResults.Text += "\r\n " + GetMissingLinksSummary();
@@ -129,9 +145,6 @@ namespace WinEventLog_Browser
             }
             finally
             {
-                if (events != null && events.Count > 0)
-                    txtResults.Text += "\r\n\r\n Unique events count: " + events.Count;
-                txtResults.Text += "\r\n DONE!!!";
                 txtResults.SelectionStart = txtResults.Text.Length;
                 txtResults.ScrollToCaret();
             }
@@ -140,8 +153,6 @@ namespace WinEventLog_Browser
         /// <summary>
         /// Event which enables compying the whole results into clipboard.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void btnCopy_Click(object sender, EventArgs e)
         {
             try
@@ -159,8 +170,6 @@ namespace WinEventLog_Browser
         /// <summary>
         /// Event which opens Save File Dialog and ebables saving the results into a file.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void btnSaveToFile_Click(object sender, EventArgs e)
         {
             try
@@ -182,8 +191,6 @@ namespace WinEventLog_Browser
         /// <summary>
         /// Event which disables entering non-numeric characters into Even ID text box.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void txtEventId_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
@@ -193,8 +200,6 @@ namespace WinEventLog_Browser
         /// <summary>
         /// Event which hides ot unhides "Copy Summary" button regarding of "Use missing links filtering" checked state.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void chkMissingLinksFiltering_CheckedChanged(object sender, EventArgs e)
         {
             if (chkMissingLinksFiltering.Checked)
@@ -212,8 +217,6 @@ namespace WinEventLog_Browser
         /// <summary>
         /// Event which copies the missing links summary report into clipboard.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void btnCopySummary_Click(object sender, EventArgs e)
         {
             try
@@ -242,11 +245,28 @@ namespace WinEventLog_Browser
         /// </summary>
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            WinEventLog_Filter.Properties.Settings.Default.SaveSearchConditions = this.chkSaveSearchConditions.Checked;
-            WinEventLog_Filter.Properties.Settings.Default.Save();
+            if (this.chkSaveSearchConditions.Checked)
+                StoreSearchParameters();
+            else
+            {
+                Properties.Settings.Default.SaveSearchConditions = this.chkSaveSearchConditions.Checked;
+                Properties.Settings.Default.FormSize = new System.Drawing.Size(this.Width, this.Height);
+                Properties.Settings.Default.Save();
+            }
+        }
+
+        /// <summary>
+        /// Event that is fired when user click on date reload button. It sets end date to current value of 
+        /// date and time.
+        /// </summary>
+        private void btnReloadCurrentDate_Click(object sender, EventArgs e)
+        {
+            dateEnd.Value = DateTime.Now;
         }
 
         #endregion
+
+
 
 
 
@@ -308,7 +328,8 @@ namespace WinEventLog_Browser
             missingLinksTcms.Sort();
             if (missingLinksTcms.Count > 0)
             {
-                retVal = "\r\n[MISSING LINKS SUMMARY]";
+                retVal = "\r\n\r\n\r\n===================================================================\r\n";
+                retVal += "\r\n[MISSING LINKS SUMMARY]";
                 retVal += "\r\n Machine IP: " + searchConditions.MachineIP;
                 retVal += "\r\n Time span: " + dateStart.Value + " - " + dateEnd.Value;
                 retVal += "\r\n Items:";
@@ -335,7 +356,7 @@ namespace WinEventLog_Browser
                     if (e.Message.Contains(msgPart))
                     {
                         string tcm = e.Message.Substring(e.Message.IndexOf(msgPart, 0) + msgPart.Length, 13);
-                        if (!tcm.Equals(""))
+                        if (!tcm.Equals("") && !missingLinksTcms.Contains(tcm))
                             missingLinksTcms.Add(tcm);
                     }
                 }
@@ -345,7 +366,6 @@ namespace WinEventLog_Browser
         /// <summary>
         /// Gets the IP address of the local computer.
         /// </summary>
-        /// <returns>IP address</returns>
         private string getMachineIPAddress()
         {
             IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
@@ -389,9 +409,6 @@ namespace WinEventLog_Browser
         /// <summary>
         /// Adding keyboard shortcuts to the MainForm action buttons.
         /// </summary>
-        /// <param name="msg"></param>
-        /// <param name="keyData"></param>
-        /// <returns></returns>
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (keyData == (Keys.Control | Keys.S))
@@ -427,7 +444,7 @@ namespace WinEventLog_Browser
             searchConditions.EndDate = dateEnd.Value;
             searchConditions.MissingLinksFiltering = chkMissingLinksFiltering.Checked;
             searchConditions.MachineIP = getMachineIPAddress();
-            searchConditions.MachineName = System.Environment.MachineName;
+            searchConditions.MachineName = Environment.MachineName;
         }
 
         /// <summary>
@@ -438,15 +455,17 @@ namespace WinEventLog_Browser
         {
             try
             {
-                WinEventLog_Filter.Properties.Settings.Default.SearchForTerm = this.txtSearchTerm.Text;
-                WinEventLog_Filter.Properties.Settings.Default.EventID = this.txtEventId.Text;
-                WinEventLog_Filter.Properties.Settings.Default.EventType = this.cmbEvenType.Text;
-                WinEventLog_Filter.Properties.Settings.Default.EventLog = this.cmbEventLog.Text;
-                WinEventLog_Filter.Properties.Settings.Default.EventSource = this.txtEventSource.Text;
-                WinEventLog_Filter.Properties.Settings.Default.MissingLinksFiltering = this.chkMissingLinksFiltering.Checked;
-                WinEventLog_Filter.Properties.Settings.Default.MachSourcePhrase = this.chkMachExact.Checked;
-                WinEventLog_Filter.Properties.Settings.Default.SaveSearchConditions = this.chkSaveSearchConditions.Checked;
-                WinEventLog_Filter.Properties.Settings.Default.Save();
+                Properties.Settings.Default.SearchForTerm = this.txtSearchTerm.Text;
+                Properties.Settings.Default.EventID = this.txtEventId.Text;
+                Properties.Settings.Default.EventType = this.cmbEvenType.Text;
+                Properties.Settings.Default.EventLog = this.cmbEventLog.Text;
+                Properties.Settings.Default.EventSource = this.txtEventSource.Text;
+                Properties.Settings.Default.MissingLinksFiltering = this.chkMissingLinksFiltering.Checked;
+                Properties.Settings.Default.MachSourcePhrase = this.chkMachExact.Checked;
+                Properties.Settings.Default.EndDate = this.dateEnd.Value;
+                Properties.Settings.Default.SaveSearchConditions = this.chkSaveSearchConditions.Checked;
+                Properties.Settings.Default.FormSize = new System.Drawing.Size(this.Width, this.Height);
+                Properties.Settings.Default.Save();
             }
             catch (Exception ex)
             {
@@ -463,15 +482,17 @@ namespace WinEventLog_Browser
         {
             try
             {
-                this.txtSearchTerm.Text = WinEventLog_Filter.Properties.Settings.Default.SearchForTerm;
-                this.txtEventId.Text = WinEventLog_Filter.Properties.Settings.Default.EventID;
-                this.cmbEvenType.Text = WinEventLog_Filter.Properties.Settings.Default.EventType;
-                this.cmbEventLog.Text = WinEventLog_Filter.Properties.Settings.Default.EventLog;
-                this.txtEventSource.Text = WinEventLog_Filter.Properties.Settings.Default.EventSource;
-                this.chkMissingLinksFiltering.Checked = WinEventLog_Filter.Properties.Settings.Default.MissingLinksFiltering;
-                this.chkMachExact.Checked = WinEventLog_Filter.Properties.Settings.Default.MachSourcePhrase;
-                this.chkSaveSearchConditions.Checked = WinEventLog_Filter.Properties.Settings.Default.SaveSearchConditions;
-                WinEventLog_Filter.Properties.Settings.Default.Save();
+                this.txtSearchTerm.Text = Properties.Settings.Default.SearchForTerm;
+                this.txtEventId.Text = Properties.Settings.Default.EventID;
+                this.cmbEvenType.Text = Properties.Settings.Default.EventType;
+                this.cmbEventLog.Text = Properties.Settings.Default.EventLog;
+                this.txtEventSource.Text = Properties.Settings.Default.EventSource;
+                this.chkMissingLinksFiltering.Checked = Properties.Settings.Default.MissingLinksFiltering;
+                this.chkMachExact.Checked = Properties.Settings.Default.MachSourcePhrase;
+                this.dateStart.Value = Properties.Settings.Default.EndDate;
+                this.Width = Properties.Settings.Default.FormSize.Width;
+                this.Height = Properties.Settings.Default.FormSize.Height;
+                this.chkSaveSearchConditions.Checked = Properties.Settings.Default.SaveSearchConditions;
             }
             catch (Exception ex)
             {

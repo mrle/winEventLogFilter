@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using WinEventLog_Filter;
-namespace WinEventLog_Browser
+
+namespace WinEventLog_Filter
 {
     partial class MainForm
     {
@@ -35,6 +35,7 @@ namespace WinEventLog_Browser
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.pnlSearchConditions = new System.Windows.Forms.Panel();
             this.grpSearchConditions = new System.Windows.Forms.GroupBox();
+            this.btnReloadCurrentDate = new System.Windows.Forms.Button();
             this.chkSaveSearchConditions = new System.Windows.Forms.CheckBox();
             this.txtSearchTerm = new System.Windows.Forms.TextBox();
             this.lblEventSearchTerm = new System.Windows.Forms.Label();
@@ -78,6 +79,7 @@ namespace WinEventLog_Browser
             // 
             // grpSearchConditions
             // 
+            this.grpSearchConditions.Controls.Add(this.btnReloadCurrentDate);
             this.grpSearchConditions.Controls.Add(this.chkSaveSearchConditions);
             this.grpSearchConditions.Controls.Add(this.txtSearchTerm);
             this.grpSearchConditions.Controls.Add(this.lblEventSearchTerm);
@@ -104,13 +106,24 @@ namespace WinEventLog_Browser
             this.grpSearchConditions.TabStop = false;
             this.grpSearchConditions.Text = "Search Conditions:";
             // 
+            // btnReloadCurrentDate
+            // 
+            this.btnReloadCurrentDate.Image = global::WinEventLog_Filter.Properties.Resources.reload;
+            this.btnReloadCurrentDate.Location = new System.Drawing.Point(713, 152);
+            this.btnReloadCurrentDate.Name = "btnReloadCurrentDate";
+            this.btnReloadCurrentDate.Size = new System.Drawing.Size(25, 25);
+            this.btnReloadCurrentDate.TabIndex = 8;
+            this.tipToolTip.SetToolTip(this.btnReloadCurrentDate, "Reloads current date and time.");
+            this.btnReloadCurrentDate.UseVisualStyleBackColor = true;
+            this.btnReloadCurrentDate.Click += new System.EventHandler(this.btnReloadCurrentDate_Click);
+            // 
             // chkSaveSearchConditions
             // 
             this.chkSaveSearchConditions.AutoSize = true;
             this.chkSaveSearchConditions.Location = new System.Drawing.Point(557, 22);
             this.chkSaveSearchConditions.Name = "chkSaveSearchConditions";
             this.chkSaveSearchConditions.Size = new System.Drawing.Size(211, 20);
-            this.chkSaveSearchConditions.TabIndex = 14;
+            this.chkSaveSearchConditions.TabIndex = 15;
             this.chkSaveSearchConditions.Text = "Remember search conditions";
             this.tipToolTip.SetToolTip(this.chkSaveSearchConditions, "Check this one if you want search conditions to be saved until next application s" +
         "tart.");
@@ -184,7 +197,7 @@ namespace WinEventLog_Browser
             this.chkMissingLinksFiltering.Name = "chkMissingLinksFiltering";
             this.chkMissingLinksFiltering.Padding = new System.Windows.Forms.Padding(3);
             this.chkMissingLinksFiltering.Size = new System.Drawing.Size(224, 26);
-            this.chkMissingLinksFiltering.TabIndex = 8;
+            this.chkMissingLinksFiltering.TabIndex = 9;
             this.chkMissingLinksFiltering.Text = "Use the \"missing links\" filtering";
             this.tipToolTip.SetToolTip(this.chkMissingLinksFiltering, "Only usable with 11111 events, missing link errors. Allows extracting of \r\nthe mi" +
         "ssing links summary results. Also, enables Copy Summary button.");
@@ -325,10 +338,11 @@ namespace WinEventLog_Browser
             this.btnCopySummary.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCopySummary.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnCopySummary.ForeColor = System.Drawing.SystemColors.ControlText;
             this.btnCopySummary.Location = new System.Drawing.Point(373, 5);
             this.btnCopySummary.Name = "btnCopySummary";
             this.btnCopySummary.Size = new System.Drawing.Size(145, 38);
-            this.btnCopySummary.TabIndex = 10;
+            this.btnCopySummary.TabIndex = 11;
             this.btnCopySummary.Text = "Copy su&mmary";
             this.tipToolTip.SetToolTip(this.btnCopySummary, "Copy the missing links summary results into clipboard. \r\nShortcut: Ctrl+M.");
             this.btnCopySummary.UseVisualStyleBackColor = true;
@@ -342,7 +356,7 @@ namespace WinEventLog_Browser
             this.btnCopy.Location = new System.Drawing.Point(524, 5);
             this.btnCopy.Name = "btnCopy";
             this.btnCopy.Size = new System.Drawing.Size(113, 38);
-            this.btnCopy.TabIndex = 11;
+            this.btnCopy.TabIndex = 12;
             this.btnCopy.Text = "&Copy";
             this.tipToolTip.SetToolTip(this.btnCopy, "Copy the results into clipboard. \r\nShortcut: Ctrl+C.");
             this.btnCopy.UseVisualStyleBackColor = true;
@@ -356,7 +370,7 @@ namespace WinEventLog_Browser
             this.btnSaveToFile.Location = new System.Drawing.Point(643, 5);
             this.btnSaveToFile.Name = "btnSaveToFile";
             this.btnSaveToFile.Size = new System.Drawing.Size(134, 38);
-            this.btnSaveToFile.TabIndex = 12;
+            this.btnSaveToFile.TabIndex = 13;
             this.btnSaveToFile.Text = "&Save to file ..";
             this.tipToolTip.SetToolTip(this.btnSaveToFile, "Open Save File Dialog, saves the results into text file. \r\nShortcut: Ctrl+S.");
             this.btnSaveToFile.UseVisualStyleBackColor = true;
@@ -370,7 +384,7 @@ namespace WinEventLog_Browser
             this.btnFilter.Location = new System.Drawing.Point(3, 5);
             this.btnFilter.Name = "btnFilter";
             this.btnFilter.Size = new System.Drawing.Size(113, 38);
-            this.btnFilter.TabIndex = 9;
+            this.btnFilter.TabIndex = 10;
             this.btnFilter.Text = "Filter";
             this.tipToolTip.SetToolTip(this.btnFilter, "Start filtering the Windows event entries by the search conditions. \r\nShortcut: E" +
         "nter.");
@@ -385,7 +399,7 @@ namespace WinEventLog_Browser
             this.txtResults.Name = "txtResults";
             this.txtResults.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.txtResults.Size = new System.Drawing.Size(784, 287);
-            this.txtResults.TabIndex = 13;
+            this.txtResults.TabIndex = 14;
             this.tipToolTip.SetToolTip(this.txtResults, "Displays the filtered event entries.");
             this.txtResults.WordWrap = false;
             this.txtResults.MouseHover += new System.EventHandler(this.txtResults_MouseHover);
@@ -475,6 +489,7 @@ namespace WinEventLog_Browser
         private System.Windows.Forms.Label lblEventSearchTerm;
         private System.Windows.Forms.ToolTip tipToolTip;
         private System.Windows.Forms.CheckBox chkSaveSearchConditions;
+        private System.Windows.Forms.Button btnReloadCurrentDate;
         //private System.Windows.Forms.ComboBox cmbLocalNetworkAdrs;
     }
 }

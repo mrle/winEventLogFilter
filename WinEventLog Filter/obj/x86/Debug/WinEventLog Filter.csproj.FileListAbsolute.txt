@@ -30,15 +30,16 @@ F:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\obj\x86\Debu
 F:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\obj\x86\Debug\WinEventLog Filter.pdb
 F:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\bin\Debug\WinEventLog Filter.exe
 F:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\bin\Debug\WinEventLog Filter.pdb
-F:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\obj\x86\Debug\WinEventLog_Browser.MainForm.resources
 F:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\obj\x86\Debug\WinEventLog_Filter.Properties.Resources.resources
 F:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\obj\x86\Debug\WinEventLog Filter.csproj.GenerateResource.Cache
 F:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\obj\x86\Debug\WinEventLog Filter.csprojResolveAssemblyReference.cache
 D:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\bin\Debug\WinEventLog Filter.exe.config
 D:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\bin\Debug\WinEventLog Filter.exe
 D:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\bin\Debug\WinEventLog Filter.pdb
-D:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\obj\x86\Debug\WinEventLog_Browser.MainForm.resources
 D:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\obj\x86\Debug\WinEventLog_Filter.Properties.Resources.resources
 D:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\obj\x86\Debug\WinEventLog Filter.csproj.GenerateResource.Cache
 D:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\obj\x86\Debug\WinEventLog Filter.exe
 D:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\obj\x86\Debug\WinEventLog Filter.pdb
+F:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\obj\x86\Debug\WinEventLog_Filter.MainForm.resources
+D:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\obj\x86\Debug\WinEventLog Filter.csprojResolveAssemblyReference.cache
+D:\Dropbox\DEV\VS2012 Projects\winEventLogFilter\WinEventLog Filter\obj\x86\Debug\WinEventLog_Filter.MainForm.resources

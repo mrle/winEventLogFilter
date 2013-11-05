@@ -113,9 +113,9 @@ namespace WinEventLog_Filter
             this.btnReloadCurrentDate.Name = "btnReloadCurrentDate";
             this.btnReloadCurrentDate.Size = new System.Drawing.Size(25, 25);
             this.btnReloadCurrentDate.TabIndex = 8;
-            this.tipToolTip.SetToolTip(this.btnReloadCurrentDate, "Reloads current date and time.");
             this.btnReloadCurrentDate.UseVisualStyleBackColor = true;
             this.btnReloadCurrentDate.Click += new System.EventHandler(this.btnReloadCurrentDate_Click);
+            this.tipToolTip.SetToolTip(this.btnReloadCurrentDate, "Reloads current date and time.\r\nShortcut: Ctrl+R.");
             // 
             // chkSaveSearchConditions
             // 
@@ -125,7 +125,7 @@ namespace WinEventLog_Filter
             this.chkSaveSearchConditions.Size = new System.Drawing.Size(211, 20);
             this.chkSaveSearchConditions.TabIndex = 15;
             this.chkSaveSearchConditions.Text = "Remember search conditions";
-            this.tipToolTip.SetToolTip(this.chkSaveSearchConditions, "Check this one if you want search conditions to be saved until next application s" +
+            this.tipToolTip.SetToolTip(this.chkSaveSearchConditions, "Check this one if you want search conditions \r\nto be saved until next application s" +
         "tart.");
             this.chkSaveSearchConditions.UseVisualStyleBackColor = true;
             // 
@@ -440,23 +440,11 @@ namespace WinEventLog_Filter
         /// <summary>
         /// Dictionary which holds all unique Windows events which fulfill the search conditions.
         /// </summary>
-        private static Dictionary<int, EventLogEntry> events;
+        private static Dictionary<int, EventLogEntry> uniqueEventsResults;
         /// <summary>
         /// List which holds missing links tcm-s in if Missing links filtering is turned on.
         /// </summary>
-        private List<string> missingLinksTcms;
-        /// <summary>
-        /// The name of the computer on which the application is executed.
-        /// </summary>
-        //private string machineName;
-        /// <summary>
-        /// The IP address of the computer on which the application is executed.
-        /// </summary>
-        //private string machineIpAddress;
-        /// <summary>
-        /// Array of the search terms delimited by , and ;.
-        /// </summary>
-        //private string[] searchTerms;
+        private List<string> missingLinksTcmResults;
         /// <summary>
         /// Object which contains current search conditions.
         /// </summary>

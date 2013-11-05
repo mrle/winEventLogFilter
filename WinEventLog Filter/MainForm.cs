@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Windows.Forms;
 
 namespace WinEventLog_Filter
@@ -25,9 +26,13 @@ namespace WinEventLog_Filter
             dateStart.Value = DateTime.Now.AddDays(-1);
             GetEventTypes();
             GetEventLogs();
+            uniqueEventsResults = new Dictionary<int, EventLogEntry>();
+            missingLinksTcmResults = new List<string>();
             if (Properties.Settings.Default.SaveSearchConditions)
                 RestoreSearchParameters();
         }
+
+
 
         #region Events
         /// <summary>
@@ -35,9 +40,9 @@ namespace WinEventLog_Filter
         /// 1.) Get the search conditions
         /// 2.) Validate them
         /// 3.) Access Windows event log
-        /// 4.) Loop throught the event entries of that log
+        /// 4.) Loop throught the event entries of selected log
         /// 5.) Filter the entries that match the search conditions
-        /// 6.) Pussh the unique filtered entries in the resulting list
+        /// 6.) Push the uniqlly filtered entries in the resulting list
         /// 7.) Print the results
         /// 8.) Save search conditions in app settings
         /// </summary>
@@ -45,35 +50,14 @@ namespace WinEventLog_Filter
         {
             try
             {
-                //do {
-                //    GetSearchConditions();
-                //    if (searchConditions.ValidateDateConditions() == SearchConditions.ValidationStatus.DatesEqual)
-
-                //} while(searchConditions.ValidateDateConditions() != SearchConditions.ValidationStatus.ValidationPassed);
-                // If start and edn dates are equal, substract one day from start date
-                if (dateStart.Value.ToShortDateString().Equals(dateEnd.Value.ToShortDateString()))
-                    dateStart.Value = dateStart.Value.AddDays(-1);
-                // If date span is greater then 15 days promt the user
-                if ((dateEnd.Value - dateStart.Value).Days > 15)
-                {
-                    if (MessageBox.Show("You have selected the date span which is greater then 15 days! " +
-                        "Consequently, greater number of the windows events has to be filtered, which may prolong the execution time." +
-                        "\r\n\r\nIf you want to proceed select Ok (or press Enter). \r\nIf you want to abort the action select Cancel.",
-                        "Question",
-                        MessageBoxButtons.OKCancel,
-                        MessageBoxIcon.Question) == System.Windows.Forms.DialogResult.Cancel)
-                        return;
-                }
-
                 // Load search conditions
                 GetSearchConditions();
-                txtResults.ForeColor = Color.Green;
-                txtResults.Text = searchConditions.PrintSearchConditions();
+                // Validate date fields
+                if (searchConditions.ValidateDateConditions() == SearchConditions.ValidationStatus.QuestionDialogCancellation) return;
 
-                
-                missingLinksTcms = new List<string>();
-                events = new Dictionary<int, EventLogEntry>();
                 bool connected = false;
+                uniqueEventsResults.Clear();
+                missingLinksTcmResults.Clear();
                 // Load selected Windows log
                 //using (EventLog log = new EventLog(searchConditions.EventLog, cmbLocalNetworkAdrs.Text))
                 using (EventLog log = new EventLog(searchConditions.EventLog, searchConditions.MachineName))
@@ -85,30 +69,10 @@ namespace WinEventLog_Filter
                     {
                         using (EventLogEntry ele = log.Entries[i])
                         {
-                            // Break the loop if the current event entry creation date is older then start date search parameter
-                            if (ele.TimeGenerated < searchConditions.StartDate)
+                            if (searchConditions.DoesCurrentEventMeetSearchCriteria(ele) == SearchConditions.ValidationStatus.SearchCriteriaMeet)
+                                PushIntoResults(ele);
+                            else if (searchConditions.DoesCurrentEventMeetSearchCriteria(ele) == SearchConditions.ValidationStatus.EndOfDateSpanReached)
                                 break;
-                            // Skip the iteration if the current event entirty creation date is newer thrn end date search parameter
-                            if (ele.TimeGenerated >= searchConditions.EndDate)
-                                continue;
-                            // Skip the iteration if search term exist and if current event message does not contain it
-                            if (searchConditions.SearchTerms != null && !MessageContainSearchedTerm(ele.Message))
-                                continue;
-                            // Skip the iteration if event ID condition is NOT empty or if it is NOT the same as of the current event entry
-                            if (!(searchConditions.EventID.Equals("") || ele.EventID == int.Parse(searchConditions.EventID)))
-                                continue;
-                            // Skip the iteration if event source condition is NOT empty or if it is NOT the same as of the current event entry (exact phrase condition is also considered)
-                            if (!(searchConditions.EventSource.Equals("")
-                                || (searchConditions.MatchExactEventSource ?
-                                    ele.Source.ToString().ToLower().Equals(searchConditions.EventSource.ToLower()) :
-                                    ele.Source.ToString().ToLower().Contains(searchConditions.EventSource.ToLower()))))
-                                continue;
-                            // Skip the iteration if event type condition is NOT All or if it is NOT the same as of the current event entry
-                            if (!(searchConditions.EventType.Equals("All") || searchConditions.EventType.Equals(ele.EntryType.ToString())))
-                                continue;
-
-                            // When all validation have passes, push event entry into the resulting list
-                            PushEventMessage(ele);
                         }
                     }
                     this.Enabled = true;
@@ -117,27 +81,12 @@ namespace WinEventLog_Filter
                 if (!connected) 
                     throw new Exception("Unable to access '" + searchConditions.EventLog + "' event log!");
 
-
-
-                // Print the results
-                for (var i = 0; i < events.Count; i++)
-                {
-                    txtResults.Text += "\r\n [EVENT No " + (i + 1) + "]";
-                    txtResults.Text += "\r\n " + events.ElementAt(i).Value.Message.Replace("  ", "\r\n").Replace("\n", "\r\n");
-                    txtResults.Text += "\r\n -------------------------------------------------------------------------------------------------------------------------------";
-                }
-                if (events != null && events.Count > 0)
-                    txtResults.Text += "\r\n\r\n ||||| >>> RESULT: " + events.Count + " unique events founded!!! <<< |||||";
-                else
-                    txtResults.Text += "\r\n\r\n There is no Windows events that match the search criteria :'(";
-
-
-                // Print missing links summary results, if missing links filtering is turned on
-                if (searchConditions.MissingLinksFiltering)
-                    txtResults.Text += "\r\n " + GetMissingLinksSummary();
+                // Print results
+                txtResults.ForeColor = Color.Green;
+                txtResults.Text = GenerateResultOutput();
 
                 // Save search conditions in app settings
-                StoreSearchParameters();
+                StoreSearchParameters(true);
             }
             catch (Exception ex)
             {
@@ -245,14 +194,7 @@ namespace WinEventLog_Filter
         /// </summary>
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (this.chkSaveSearchConditions.Checked)
-                StoreSearchParameters();
-            else
-            {
-                Properties.Settings.Default.SaveSearchConditions = this.chkSaveSearchConditions.Checked;
-                Properties.Settings.Default.FormSize = new System.Drawing.Size(this.Width, this.Height);
-                Properties.Settings.Default.Save();
-            }
+            StoreSearchParameters(false);
         }
 
         /// <summary>
@@ -262,6 +204,34 @@ namespace WinEventLog_Filter
         private void btnReloadCurrentDate_Click(object sender, EventArgs e)
         {
             dateEnd.Value = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Adding keyboard shortcuts to the MainForm action buttons.
+        /// </summary>
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == (Keys.Control | Keys.S))
+            {
+                btnSaveToFile_Click(null, null);
+                return true;
+            }
+            if (keyData == (Keys.Control | Keys.M))
+            {
+                btnCopySummary_Click(null, null);
+                return true;
+            }
+            if (keyData == (Keys.Control | Keys.C))
+            {
+                btnCopy_Click(null, null);
+                return true;
+            }
+            if (keyData == (Keys.Control | Keys.R))
+            {
+                btnReloadCurrentDate_Click(null, null);
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         #endregion
@@ -316,48 +286,83 @@ namespace WinEventLog_Filter
         }
 
         /// <summary>
+        /// Helper method that generates result output based on result list that are populated, or not, with resulting
+        /// windows event logs.
+        /// </summary>
+        private string GenerateResultOutput()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            // Add search criteria
+            sb.Append(searchConditions.PrintSearchConditions());
+            // Add events result
+            for (var i = 0; i < uniqueEventsResults.Count; i++)
+            {
+                sb.Append("\r\n\r\n [EVENT No " + (i + 1) + "]");
+                sb.Append("\r\n " + uniqueEventsResults.ElementAt(i).Value.Message.Replace("  ", "\r\n").Replace("\n", "\r\n"));
+                sb.Append("\r\n -------------------------------------------------------------------------------------------------------------------------------");
+            }
+            // Add event summary
+            if (uniqueEventsResults != null && uniqueEventsResults.Count > 0)
+            {
+                sb.Append("\r\n\r\n\r\n ||||| >>> RESULT: " + uniqueEventsResults.Count + " unique Windows events found!!! <<< |||||\r\n\r\n");
+            }
+            else
+            {
+                sb.Append("\r\n\r\n\r\n There is no Windows events that match the search criteria :'(\r\n\r\n");
+            }
+            // Add optional missing links summary
+            if (searchConditions.MissingLinksFiltering)
+            {
+                sb.Append(GetMissingLinksSummary());
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
         /// Helper method which creates missing links summary output. If there are no missing links output is empty.
         /// </summary>
         /// <returns>Missing links summary string output</returns>
         private string GetMissingLinksSummary()
         {
-            string retVal = "";
+            if (missingLinksTcmResults == null) return "";
 
-            if (missingLinksTcms == null) return retVal;
-
-            missingLinksTcms.Sort();
-            if (missingLinksTcms.Count > 0)
+            missingLinksTcmResults.Sort();
+            StringBuilder sb = new StringBuilder();
+            if (missingLinksTcmResults.Count > 0)
             {
-                retVal = "\r\n\r\n\r\n===================================================================\r\n";
-                retVal += "\r\n[MISSING LINKS SUMMARY]";
-                retVal += "\r\n Machine IP: " + searchConditions.MachineIP;
-                retVal += "\r\n Time span: " + dateStart.Value + " - " + dateEnd.Value;
-                retVal += "\r\n Items:";
+                sb.Append("\r\n====================================================");
+                sb.Append("\r\n[MISSING LINKS SUMMARY]");
+                sb.Append("\r\n Machine IP: " + searchConditions.MachineIP);
+                sb.Append("\r\n Time span: " + dateStart.Value + " - " + dateEnd.Value);
+                sb.Append("\r\n Extracted unique items:");
+                for (var i = 0; i < missingLinksTcmResults.Count; i++)
+                    sb.Append("\r\n " + missingLinksTcmResults[i].ToString());
+                sb.Append("\r\n====================================================\r\n");
             }
-            for (var i = 0; i < missingLinksTcms.Count; i++)
-                retVal += "\r\n " + missingLinksTcms[i].ToString();
 
-            return retVal;
+            return sb.ToString();
         }
 
         /// <summary>
         /// Helper method which pushes the current event entry in the resulting list, but only if it is unique.
         /// </summary>
         /// <param name="e">Event entry object</param>
-        private void PushEventMessage(EventLogEntry e)
+        private void PushIntoResults(EventLogEntry e)
         {
             int hashCode = e.Message.GetHashCode();
-            if (!events.ContainsKey(hashCode))
+            if (!uniqueEventsResults.ContainsKey(hashCode))
             {
-                events.Add(hashCode, e);
+                uniqueEventsResults.Add(hashCode, e);
                 if (chkMissingLinksFiltering.Checked)
                 {
                     string msgPart = "MISSING LITERATURE LINK: Resource ";
                     if (e.Message.Contains(msgPart))
                     {
                         string tcm = e.Message.Substring(e.Message.IndexOf(msgPart, 0) + msgPart.Length, 13);
-                        if (!tcm.Equals("") && !missingLinksTcms.Contains(tcm))
-                            missingLinksTcms.Add(tcm);
+                        if (!tcm.Equals("") && !missingLinksTcmResults.Contains(tcm))
+                            missingLinksTcmResults.Add(tcm);
                     }
                 }
             }
@@ -392,44 +397,6 @@ namespace WinEventLog_Filter
         }
 
         /// <summary>
-        /// Helper method whish checks if passed string contains the search term od the search conditions
-        /// </summary>
-        /// <param name="msg">Event message to be searched</param>
-        /// <returns>Returns true if message contains the searched term</returns>
-        private bool MessageContainSearchedTerm(string msg)
-        {
-            if (searchConditions.SearchTerms == null) return false;
-
-            for (var i = 0; i < searchConditions.SearchTerms.Length; i++)
-                if (msg.ToLower().Contains(searchConditions.SearchTerms[i])) return true;
-
-            return false;
-        }
-
-        /// <summary>
-        /// Adding keyboard shortcuts to the MainForm action buttons.
-        /// </summary>
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
-        {
-            if (keyData == (Keys.Control | Keys.S))
-            {
-                btnSaveToFile_Click(null, null);
-                return true;
-            }
-            if (keyData == (Keys.Control | Keys.M))
-            {
-                btnCopySummary_Click(null, null);
-                return true;
-            }
-            if (keyData == (Keys.Control | Keys.C))
-            {
-                btnCopy_Click(null, null);
-                return true;
-            }
-            return base.ProcessCmdKey(ref msg, keyData);
-        }
-
-        /// <summary>
         /// Gets the search conditions from main form and store them into local searchConditions attrinute.
         /// </summary>
         private void GetSearchConditions()
@@ -451,9 +418,9 @@ namespace WinEventLog_Filter
         /// Helper method that is used for storing current search parameters in application settings so that they can be loaded
         /// on next application start. Date fields are excluded.
         /// </summary>
-        private void StoreSearchParameters()
+        private void StoreSearchParameters(bool filterClicked)
         {
-            try
+            if (!filterClicked)
             {
                 Properties.Settings.Default.SearchForTerm = this.txtSearchTerm.Text;
                 Properties.Settings.Default.EventID = this.txtEventId.Text;
@@ -463,16 +430,11 @@ namespace WinEventLog_Filter
                 Properties.Settings.Default.MissingLinksFiltering = this.chkMissingLinksFiltering.Checked;
                 Properties.Settings.Default.MachSourcePhrase = this.chkMachExact.Checked;
                 Properties.Settings.Default.EndDate = this.dateEnd.Value;
-                Properties.Settings.Default.SaveSearchConditions = this.chkSaveSearchConditions.Checked;
-                Properties.Settings.Default.FormSize = new System.Drawing.Size(this.Width, this.Height);
-                Properties.Settings.Default.Save();
             }
-            catch (Exception ex)
-            {
-                txtResults.ForeColor = Color.Red;
-                txtResults.Text = ex.Message;
-                txtResults.Text += "\r\n" + ex.StackTrace;
-            }
+            
+            Properties.Settings.Default.SaveSearchConditions = this.chkSaveSearchConditions.Checked;
+            Properties.Settings.Default.FormSize = new System.Drawing.Size(this.Width, this.Height);
+            Properties.Settings.Default.Save();
         }
 
         /// <summary>
@@ -480,26 +442,17 @@ namespace WinEventLog_Filter
         /// </summary>
         private void RestoreSearchParameters()
         {
-            try
-            {
-                this.txtSearchTerm.Text = Properties.Settings.Default.SearchForTerm;
-                this.txtEventId.Text = Properties.Settings.Default.EventID;
-                this.cmbEvenType.Text = Properties.Settings.Default.EventType;
-                this.cmbEventLog.Text = Properties.Settings.Default.EventLog;
-                this.txtEventSource.Text = Properties.Settings.Default.EventSource;
-                this.chkMissingLinksFiltering.Checked = Properties.Settings.Default.MissingLinksFiltering;
-                this.chkMachExact.Checked = Properties.Settings.Default.MachSourcePhrase;
-                this.dateStart.Value = Properties.Settings.Default.EndDate;
-                this.Width = Properties.Settings.Default.FormSize.Width;
-                this.Height = Properties.Settings.Default.FormSize.Height;
-                this.chkSaveSearchConditions.Checked = Properties.Settings.Default.SaveSearchConditions;
-            }
-            catch (Exception ex)
-            {
-                txtResults.ForeColor = Color.Red;
-                txtResults.Text = ex.Message;
-                txtResults.Text += "\r\n" + ex.StackTrace;
-            }
+            this.txtSearchTerm.Text = Properties.Settings.Default.SearchForTerm;
+            this.txtEventId.Text = Properties.Settings.Default.EventID;
+            this.cmbEvenType.Text = Properties.Settings.Default.EventType;
+            this.cmbEventLog.Text = Properties.Settings.Default.EventLog;
+            this.txtEventSource.Text = Properties.Settings.Default.EventSource;
+            this.chkMissingLinksFiltering.Checked = Properties.Settings.Default.MissingLinksFiltering;
+            this.chkMachExact.Checked = Properties.Settings.Default.MachSourcePhrase;
+            this.dateStart.Value = Properties.Settings.Default.EndDate;
+            this.Width = Properties.Settings.Default.FormSize.Width;
+            this.Height = Properties.Settings.Default.FormSize.Height;
+            this.chkSaveSearchConditions.Checked = Properties.Settings.Default.SaveSearchConditions;
         }
 
         /// <summary>

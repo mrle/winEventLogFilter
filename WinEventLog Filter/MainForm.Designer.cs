@@ -113,9 +113,9 @@ namespace WinEventLog_Filter
             this.btnReloadCurrentDate.Name = "btnReloadCurrentDate";
             this.btnReloadCurrentDate.Size = new System.Drawing.Size(25, 25);
             this.btnReloadCurrentDate.TabIndex = 8;
+            this.tipToolTip.SetToolTip(this.btnReloadCurrentDate, "Reloads current date and time.\r\nShortcut: Ctrl+R.");
             this.btnReloadCurrentDate.UseVisualStyleBackColor = true;
             this.btnReloadCurrentDate.Click += new System.EventHandler(this.btnReloadCurrentDate_Click);
-            this.tipToolTip.SetToolTip(this.btnReloadCurrentDate, "Reloads current date and time.\r\nShortcut: Ctrl+R.");
             // 
             // chkSaveSearchConditions
             // 
@@ -125,8 +125,8 @@ namespace WinEventLog_Filter
             this.chkSaveSearchConditions.Size = new System.Drawing.Size(211, 20);
             this.chkSaveSearchConditions.TabIndex = 15;
             this.chkSaveSearchConditions.Text = "Remember search conditions";
-            this.tipToolTip.SetToolTip(this.chkSaveSearchConditions, "Check this one if you want search conditions \r\nto be saved until next application s" +
-        "tart.");
+            this.tipToolTip.SetToolTip(this.chkSaveSearchConditions, "Check this one if you want search conditions \r\nto be saved until next application" +
+        " start.");
             this.chkSaveSearchConditions.UseVisualStyleBackColor = true;
             // 
             // txtSearchTerm
@@ -158,9 +158,9 @@ namespace WinEventLog_Filter
             this.chkMachExact.Location = new System.Drawing.Point(396, 127);
             this.chkMachExact.Name = "chkMachExact";
             this.chkMachExact.Padding = new System.Windows.Forms.Padding(3);
-            this.chkMachExact.Size = new System.Drawing.Size(180, 26);
+            this.chkMachExact.Size = new System.Drawing.Size(156, 26);
             this.chkMachExact.TabIndex = 5;
-            this.chkMachExact.Text = "Match the exact phrase";
+            this.chkMachExact.Text = "Match exact phrase";
             this.tipToolTip.SetToolTip(this.chkMachExact, "If checked, the event source field value must match\r\nthe exact value of the event" +
         " entries source attribute.");
             this.chkMachExact.UseVisualStyleBackColor = true;
@@ -196,9 +196,9 @@ namespace WinEventLog_Filter
             this.chkMissingLinksFiltering.Location = new System.Drawing.Point(151, 183);
             this.chkMissingLinksFiltering.Name = "chkMissingLinksFiltering";
             this.chkMissingLinksFiltering.Padding = new System.Windows.Forms.Padding(3);
-            this.chkMissingLinksFiltering.Size = new System.Drawing.Size(224, 26);
+            this.chkMissingLinksFiltering.Size = new System.Drawing.Size(200, 26);
             this.chkMissingLinksFiltering.TabIndex = 9;
-            this.chkMissingLinksFiltering.Text = "Use the \"missing links\" filtering";
+            this.chkMissingLinksFiltering.Text = "Use \"missing links\" filtering";
             this.tipToolTip.SetToolTip(this.chkMissingLinksFiltering, "Only usable with 11111 events, missing link errors. Allows extracting of \r\nthe mi" +
         "ssing links summary results. Also, enables Copy Summary button.");
             this.chkMissingLinksFiltering.UseVisualStyleBackColor = true;

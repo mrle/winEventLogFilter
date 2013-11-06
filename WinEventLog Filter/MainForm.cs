@@ -50,16 +50,14 @@ namespace WinEventLog_Filter
         {
             try
             {
-                // Load search conditions
+                // Load search conditions and Validate date fields
                 GetSearchConditions();
-                // Validate date fields
                 if (searchConditions.ValidateDateConditions() == SearchConditions.ValidationStatus.QuestionDialogCancellation) return;
 
                 bool connected = false;
                 uniqueEventsResults.Clear();
                 missingLinksTcmResults.Clear();
                 // Load selected Windows log
-                //using (EventLog log = new EventLog(searchConditions.EventLog, cmbLocalNetworkAdrs.Text))
                 using (EventLog log = new EventLog(searchConditions.EventLog, searchConditions.MachineName))
                 {
                     connected = true;
@@ -468,6 +466,7 @@ namespace WinEventLog_Filter
 
 
 
+        //using (EventLog log = new EventLog(searchConditions.EventLog, cmbLocalNetworkAdrs.Text))
         //private void GetLocalNetworkComputersNames()
         //{
             
